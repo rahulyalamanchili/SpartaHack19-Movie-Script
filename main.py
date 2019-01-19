@@ -3,36 +3,54 @@ import shutil
 from google_images_download import google_images_download
 from urllib.request import Request, urlopen
 import urllib.parse
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, element
 
 response = google_images_download.googleimagesdownload()   # class instantiation
 
 def main():
-    query = 'The Fast And The Furious 2001'
-    filePath = imageTest(query)
-    fileName = query.replace(" ", "") # Remove white spaces from query
-    os.rename(filePath, (os.getcwd()+'\\Posters\\' + fileName + '.jpg')) # Move the file to appropriate directory
-    shutil.rmtree(os.getcwd()+'\\downloads') # Delete the orginal directory
-    print('Done')
+    query = 'The Sound of Music'
+    # filePath = imageTest(query)
+    # fileName = query.replace(" ", "") # Remove white spaces from query
+    # os.rename(filePath, (os.getcwd()+'\\Posters\\' + fileName + '.jpg')) # Move the file to appropriate directory
+    # shutil.rmtree(os.getcwd()+'\\downloads') # Delete the original directory
+    beautifulSoupTest(query)
 
-def beautifulSoupTest(query):
+def giveMeSoup(query):
     # Conversion from URL into Python Object Tree using urllib and BeautifulSoup
     service_url = 'https://www.google.com/search'
-
     params = {
         'query': query,
     }
     url = service_url + '?' + urllib.parse.urlencode(params)
     req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     html = urllib.request.urlopen(req).read()
-    soup = BeautifulSoup(html, 'html.parser')
+    return BeautifulSoup(html, 'html.parser')
 
-    results = soup.find_all(class_="FSP1Dd") # Movie Title
-    print(results[0].get_text())
+def collectText(element, textList):
+    for child in element.contents:
+        if 'Tag' in str(type(child)):
+            collectText(child, textList)
+        else:
+            textList.append(str(child))
 
-    results = soup.find_all(class_="A1t5ne")
-    print(results[0].get_text()) # Release Date
-    print(results[2].get_text()) # Directors
+
+def beautifulSoupTest(query):
+
+    oneVal = ['release date', 'budget', 'box office', 'mpaa rating', 'duration', 'budget', 'box office']
+    manyVal = ['genre','reviews','directors','main actors', 'writers']
+
+    soup = giveMeSoup(query + ' ')
+    results = soup.find(id = "rhs_block")
+    CombinedData = results.contents
+    children = CombinedData[0].contents
+    kid = children[0].contents
+    kidA = kid[0].contents
+
+    textData = []
+    collectText(kid[0], textData)
+    for element in textData:
+        print (element)
+
 
 
 def imageTest(query):
