@@ -1,19 +1,18 @@
-import json
+from google_images_download import google_images_download
 from urllib.request import Request, urlopen
 import urllib.parse
 from bs4 import BeautifulSoup
 
-
-
+response = google_images_download.googleimagesdownload()   #class instantiation
 
 def main():
-    beautifulSoupTest()
+    query = 'Good Will Hunting'
+    imageTest(query)
 
-
-def beautifulSoupTest():
+def beautifulSoupTest(query):
     # Conversion from URL into Python Object Tree using urllib and BeautifulSoup
     service_url = 'https://www.google.com/search'
-    query = 'ShawShank Redemption'
+
     params = {
         'query': query,
     }
@@ -29,7 +28,14 @@ def beautifulSoupTest():
     print(results[0].get_text()) # Release Date
     print(results[2].get_text()) # Directors
 
-    # "brYqc"
+
+def imageTest(query):
+    searchTerm = query + " Poster"
+    arguments = {"keywords": searchTerm, "limit": 1, "size": '>2MP',
+                 "print_urls": True}  # creating list of arguments
+    paths = response.download(arguments)  # passing the arguments to the function
+    print(paths)  # printing absolute paths of the downloaded images
+
 
 main()
 
