@@ -1,28 +1,25 @@
 import json
-import urllib.request
+from urllib.request import Request, urlopen
 import urllib.parse
+from bs4 import BeautifulSoup
+
+
+
 
 def main():
-    googleAPItest()
+    beautifulSoupTest()
 
-def googleAPItest():
-    """Example of Python client calling Knowledge Graph Search API."""
 
-    api_key = '.AIzaSyB2yq7Wo-OpoA4ZOT60JcbK1B2cv9Lyg5E'
-    query = 'Taylor Swift'
-    service_url = 'https://kgsearch.googleapis.com/v1/entities:search'
+def beautifulSoupTest():
+    service_url = 'https://www.google.com/search'
+    query = 'Good Will Hunting'
     params = {
         'query': query,
-        'limit': 10,
-        'indent': True,
-        'key': api_key,
     }
     url = service_url + '?' + urllib.parse.urlencode(params)
-    print (url)
-    # response = json.loads(urllib.request.urlopen(url).read())
-    # for element in response['itemListElement']:
-    #     print(element['result']['name'] + ' (' + str(element['resultScore']) + ')')
-
+    req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+    html = urllib.request.urlopen(req).read()
+    soup = BeautifulSoup(html, 'html.parser')
 
 main()
 
