@@ -1,13 +1,19 @@
+import os
+import shutil
 from google_images_download import google_images_download
 from urllib.request import Request, urlopen
 import urllib.parse
 from bs4 import BeautifulSoup
 
-response = google_images_download.googleimagesdownload()   #class instantiation
+response = google_images_download.googleimagesdownload()   # class instantiation
 
 def main():
-    query = 'Good Will Hunting'
-    imageTest(query)
+    query = 'The Fast And The Furious 2001'
+    filePath = imageTest(query)
+    fileName = query.replace(" ", "") # Remove white spaces from query
+    os.rename(filePath, (os.getcwd()+'\\Posters\\' + fileName + '.jpg')) # Move the file to appropriate directory
+    shutil.rmtree(os.getcwd()+'\\downloads') # Delete the orginal directory
+    print('Done')
 
 def beautifulSoupTest(query):
     # Conversion from URL into Python Object Tree using urllib and BeautifulSoup
@@ -30,12 +36,12 @@ def beautifulSoupTest(query):
 
 
 def imageTest(query):
-    searchTerm = query + " Poster"
+    searchTerm = query + ' Poster'
     arguments = {"keywords": searchTerm, "limit": 1, "size": '>2MP',
                  "print_urls": True}  # creating list of arguments
-    paths = response.download(arguments)  # passing the arguments to the function
-    print(paths)  # printing absolute paths of the downloaded images
-
+    pathDict = response.download(arguments)  # passing the arguments to the function
+    path = pathDict[searchTerm]
+    return path[0]
 
 main()
 
