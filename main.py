@@ -9,13 +9,18 @@ from bs4 import BeautifulSoup, element
 response = google_images_download.googleimagesdownload()   # class instantiation
 
 def main():
-    query = 'The Dark Knight'
-    # filePath = imageTest(query)
-    # fileName = query.replace(" ", "") # Remove white spaces from query
-    # os.rename(filePath, (os.getcwd()+'\\Posters\\' + fileName + '.jpg')) # Move the file to appropriate directory
-    # shutil.rmtree(os.getcwd()+'\\downloads') # Delete the original directory
-    beautifulSoupTest(query)
-    # APITest(query)
+    text_file = open("test.txt", "r")
+    ans_file = open("jsons.txt", "w")
+    test = []
+    for element in text_file:
+        element = element.strip()
+        test.append(element)
+    # print(test)
+    for query in test:
+        jsonObj = JSONFormer(query)
+        ans_file.write(str(jsonObj))
+        print()
+    print('Done.')
 
 def giveMeSoup(query):
     # Conversion from URL into Python Object Tree using urllib and BeautifulSoup
@@ -39,6 +44,9 @@ def giveMeList(largeString):
     terms = largeString.split(',')
     termList = []
     for entry in terms:
+        ix = entry.find('(')
+        if (ix != -1):
+            entry = entry[:ix-1]
         entry = entry.strip()
         termList.append(entry)
     return termList
@@ -60,14 +68,19 @@ def beautifulSoupYouTube(query):
     return url
 
 
-def APITest(query):
+def JSONFormer(query):
     valuesDict = {}
 
-    base_link = 'http://www.omdbapi.com/?apikey=3898c71e'
+    valuesDict["poster_filename"] = imageGrab(query) # use a python library to download the image
+    valuesDict["trailer_url"] = beautifulSoupYouTube(query) # use a html scraper to find link
+
+    base_link = 'http://www.omdbapi.com/?apikey=3898c71e' # use an API for all the text info
     link = query.replace(" ", "+")
     url = base_link + '&t=' + link
     html = urllib.request.urlopen(url)
     data = json.loads(html.read())
+    if('Error' in data):
+        return
 
     valuesDict["name"] = data['Title']
     valuesDict["release_year"] = int(data['Year'])
@@ -77,7 +90,6 @@ def APITest(query):
 
 
     valString = data['Runtime']
-    # valString = '152 min'
     timeString = ''
     for char in valString:
         if char.isdigit():
@@ -104,20 +116,33 @@ def APITest(query):
     for char in valString:
         if char.isdigit():
             moneyString = moneyString + char
-    valuesDict["box_office"] = int(moneyString)
+        if(len(moneyString) != 0):
+            valuesDict["box_office"] = int(moneyString)
+        else:
+            valuesDict["box_office"] = 0
+
+    json_data = json.dumps(valuesDict)
+    return json_data
+    # print(json_data)
+    # print('working...')
 
 
-    print(valuesDict)
-
-
-
-def imageTest(query):
+def imageGrab(query):
     searchTerm = query + ' Poster'
     arguments = {"keywords": searchTerm, "limit": 1, "size": '>2MP',
                  "print_urls": True}  # creating list of arguments
     pathDict = response.download(arguments)  # passing the arguments to the function
     path = pathDict[searchTerm]
-    return path[0]
+
+    filePath = path[0]
+    fileName = query.replace(" ", "") # Remove white spaces from query
+    try:
+        os.rename(filePath, (os.getcwd()+'\\Posters\\' + fileName + '.jpg')) # Move the file to appropriate directory
+    except FileNotFoundError:
+        return ''
+
+    shutil.rmtree(os.getcwd()+'\\downloads') # Delete the original directory
+    return fileName + '.jpg'
 
 
 main()
